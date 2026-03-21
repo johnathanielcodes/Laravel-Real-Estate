@@ -46,16 +46,23 @@
         @enderror
         <label class='font-medium' for='city'>City</label>
         <input id='city' wire:model.live='city'
-            class='w-full border mt-1.5 mb-4 border-gray-500/30 outline-none rounded py-2.5 px-3' type='number'
+            class='w-full border mt-1.5 mb-4 border-gray-500/30 outline-none rounded py-2.5 px-3' type='text'
             placeholder='Enter city'>
         @error('city')
             <span class="text-red-500 text-xs block">{{ $message }}</span>
         @enderror
         <label class='font-medium' for='address'>Address</label>
         <input id='address' wire:model.live='address'
-            class='w-full border mt-1.5 mb-4 border-gray-500/30 outline-none rounded py-2.5 px-3' type='number'
+            class='w-full border mt-1.5 mb-4 border-gray-500/30 outline-none rounded py-2.5 px-3' type='text'
             placeholder='Enter address'>
         @error('address')
+            <span class="text-red-500 text-xs block">{{ $message }}</span>
+        @enderror
+        <label class='font-medium' for='area'>Area</label>
+        <input id='area' wire:model.live='area'
+            class='w-full border mt-1.5 mb-4 border-gray-500/30 outline-none rounded py-2.5 px-3' type='number'
+            placeholder='Enter area'>
+        @error('area')
             <span class="text-red-500 text-xs block">{{ $message }}</span>
         @enderror
         <label class='font-medium' for='status'>Status</label>

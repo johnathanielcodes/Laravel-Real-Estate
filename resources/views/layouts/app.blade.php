@@ -18,6 +18,7 @@
 </head>
 
 <body class="font-sans antialiased relative">
+    @include('sweetalert2::index')
     <div x-data="{ userDropdownOpen: false, mobileNavOpen: false }">
         <!-- Page Container -->
         <div id="page-container" class="mx-auto flex min-h-screen w-full min-w-[320px] flex-col bg-slate-100">
