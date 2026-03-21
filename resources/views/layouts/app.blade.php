@@ -14,12 +14,10 @@
 
     <!-- Scripts -->
     @vite(['resources/css/app.css', 'resources/js/app.js'])
-    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
 
 </head>
 
 <body class="font-sans antialiased relative">
-
     <div x-data="{ userDropdownOpen: false, mobileNavOpen: false }">
         <!-- Page Container -->
         <div id="page-container" class="mx-auto flex min-h-screen w-full min-w-[320px] flex-col bg-slate-100">

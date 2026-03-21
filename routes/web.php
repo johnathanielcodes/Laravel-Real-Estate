@@ -9,6 +9,7 @@ use Illuminate\Support\Facades\Route;
 
 // front page routes
 Route::view('/', 'welcome')->name('home');
+Route::view('/count', 'count')->name('count');
 Route::view('/properties', 'properties')->name('page.properties');
 Route::view('/buy', 'buy')->name('buy');
 Route::view('/rent', 'rent')->name('rent');

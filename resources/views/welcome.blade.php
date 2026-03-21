@@ -1,5 +1,6 @@
 <x-front-end-app>
     <livewire:hero-section />
+    @livewire('test')
     <livewire:divider :title="__('Features')" :id="__('features')" />
     <livewire:feature-section />
     <livewire:divider :title="__('Frequently Asked Questions')" />
