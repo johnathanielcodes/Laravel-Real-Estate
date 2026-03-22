@@ -2,7 +2,10 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Property;
+use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class PropertyController extends Controller
 {
@@ -11,7 +14,9 @@ class PropertyController extends Controller
      */
     public function index()
     {
-        return view('layouts.dashboard.properties.index');
+        $properties = Auth::user()->properties()->get();
+
+        return view('layouts.dashboard.properties.index', compact('properties'));
     }
 
     /**
@@ -41,9 +46,9 @@ class PropertyController extends Controller
     /**
      * Show the form for editing the specified resource.
      */
-    public function edit(string $id)
+    public function edit(Property $property)
     {
-        //
+        return view('layouts.dashboard.properties.edit', compact('property'));
     }
 
     /**

@@ -1,9 +1,10 @@
 <?php
 
 use App\Http\Controllers\PropertyController;
+use App\Models\Property;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
-
+use Illuminate\Support\Str;
 
 
 
@@ -26,7 +27,6 @@ Route::prefix('dashboard')->group(function () {
     Route::resource('/properties', PropertyController::class);
     Route::get('/properties', [PropertyController::class, 'index'])->name('properties');
 })->middleware(['auth']);
-
 Route::get('/get-roles', function () {
     return Auth::user()->roles()->with('permissions')->get();
 });
