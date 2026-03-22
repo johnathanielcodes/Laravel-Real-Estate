@@ -27,6 +27,41 @@
                 class='font-medium px-2 py-2  @if ($type === 'land') bg-green-500 @else bg-blue-500 @endif  text-white rounded-lg'
                 type='button'>Land</button>
         </div>
+        <label class='font-medium' for='featured_image'>Featured Image</label>
+        <input id='featured_image' class='w-full border mt-1.5 mb-4 border-gray-500/30 outline-none rounded py-2.5 px-3'
+            type='file' accept="image/*" wire:model.live='featured_image' placeholder='Enter featured_image'>
+        @error('featured_image')
+            <span class="text-red-500 text-xs block">{{ $message }}</span>
+        @enderror
+
+        @if ($featured_image)
+            <img src="{{ $featured_image->temporaryUrl() }}" alt="" class="w-48 h-48 rounded-2xl">
+        @endif
+        <label class='font-medium' for='property_images'>Property Images</label>
+        <input id='property_images'
+            class='w-full border mt-1.5 mb-4 border-gray-500/30 outline-none rounded py-2.5 px-3' type='file'
+            accept="image/*" wire:model='property_images' placeholder='Enter property_images' multiple>
+
+        @error('property_images')
+            <span class="text-red-500 text-xs block">{{ $message }}</span>
+        @enderror
+
+        @if ($property_images)
+            <div class="flex flex-wrap gap-4 mt-4">
+                @foreach ($property_images as $index => $property_image)
+                    @if ($property_image)
+                        <div class="relative">
+                            <img src="{{ $property_image->temporaryUrl() }}" alt="Property image {{ $index }}"
+                                class="w-48 h-48 rounded-2xl object-cover">
+                            <button type="button" wire:click="removeImage({{ $index }})"
+                                class="absolute top-2 right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center">
+                                ×
+                            </button>
+                        </div>
+                    @endif
+                @endforeach
+            </div>
+        @endif
         @error('type')
             <span class="text-red-500 text-xs block">{{ $message }}</span>
         @enderror
@@ -85,7 +120,7 @@
             <span class="text-red-500 text-xs block">{{ $message }}</span>
         @enderror
         <div class='flex items-center justify-between'>
-            <button type='submit' class='my-3 bg-indigo-500 py-2 px-5 rounded text-white font-medium'>Create</button>
+            <button type='submit' class='my-3 bg-indigo-500 py-2 px-5 rounded text-white font-medium'>Update</button>
         </div>
     </form>
 </div>

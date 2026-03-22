@@ -1,57 +1,266 @@
 <?php
 
+use App\Models\Property;
+use Livewire\Attributes\Validate;
 use Livewire\Component;
+use Livewire\WithFileUploads;
+use SweetAlert2\Laravel\Traits\WithSweetAlert;
 
 new class extends Component {
     public $property;
 
-    public function editProperty()
+    use WithSweetAlert, WithFileUploads;
+    #[Validate('required|min:3')]
+    public $title = '';
+
+    #[Validate(['property_images.*' => 'file|max:10240|nullable'])]
+    public $property_images = [];
+
+    #[Validate('image|max:10240|nullable')]
+    public $featured_image;
+
+    #[Validate('required|numeric|min:10')]
+    public $price = '';
+
+    #[Validate('required|in:apartment,land')]
+    public $type = '';
+
+    #[Validate('required|numeric|min:0')]
+    public $bedrooms = '';
+
+    #[Validate('required|numeric|min:0')]
+    public $bathrooms = '';
+
+    #[Validate('required|min:2')]
+    public $area = '';
+    #[Validate('required|min:2')]
+    public $city = '';
+
+    #[Validate('required|min:5')]
+    public $address = '';
+
+    #[Validate('required|in:available,sold,leased')]
+    public $status = '';
+
+    #[Validate('required|min:10')]
+    public $description = '';
+    public $user;
+    public function mount(Property $property)
     {
-        dd($this->property);
+        $this->property = $property;
+        $this->user = Auth::user();
+        $this->title = $this->property->title;
+        $this->price = $this->property->price;
+        $this->listing_type = $this->property->listing_type;
+        $this->type = $this->property->listing_type;
+        $this->bedrooms = $this->property->bedrooms;
+        $this->bathrooms = $this->property->bathrooms;
+        $this->area = $this->property->area;
+        $this->city = $this->property->city;
+        $this->address = $this->property->address;
+        $this->status = $this->property->status;
+        $this->description = $this->property->description;
+    }
+    public function setPropertyType($type)
+    {
+        $this->type = $type;
+    }
+    public function removeImage($index)
+    {
+        unset($this->property_images[$index]);
+        $this->property_images = array_values($this->property_images); // Re-index the array
+    }
+    public function saveProperty()
+    {
+        $data = $this->validate();
+        if ($this->featured_image) {
+            $prevFeaturedImagePath = $this->property->isFeaturedImage();
+            if ($prevFeaturedImagePath) {
+                Storage::disk('public')->delete($prevFeaturedImagePath->path);
+                $prevFeaturedImagePath->delete();
+
+                $featured_image_name = $this->featured_image->getClientOriginalName();
+                $featured_image_path = $this->featured_image->storePubliclyAs('properties', $featured_image_name, 'public');
+
+                $this->property->images()->create([
+                    'name' => $featured_image_name,
+                    'path' => $featured_image_path,
+                    'is_featured' => true,
+                ]);
+            } else {
+                $featured_image_name = $this->featured_image->getClientOriginalName();
+                $featured_image_path = $this->featured_image->storePubliclyAs('properties', $featured_image_name, 'public');
+
+                $this->property->images()->create([
+                    'name' => $featured_image_name,
+                    'path' => $featured_image_path,
+                    'is_featured' => true,
+                ]);
+            }
+        }
+        if (count($this->property_images) > 0) {
+            foreach ($this->property_images as $image) {
+                $image_name = $image->getClientOriginalName();
+                $image_path = $image->storePubliclyAs('properties', $image_name, 'public');
+                $this->property->images()->create([
+                    'name' => $image_name,
+                    'path' => $image_path,
+                    'is_featured' => false,
+                ]);
+            }
+        }
+
+        // // Debug to see if it's working
+        $update = [
+            'title' => $data['title'],
+            'slug' => Str::slug($data['title']),
+            'price' => $data['price'],
+            'listing_type' => $data['type'],
+            'bedrooms' => $data['bedrooms'],
+            'bathrooms' => $data['bathrooms'],
+            'city' => $data['city'],
+            'address' => $data['address'],
+            'area' => $data['area'],
+            'status' => $data['status'],
+            'description' => $data['description'],
+        ];
+        $this->property->update($update);
+        $this->swalToastSuccess([
+            'position' => 'top-end',
+            'title' => 'Success',
+            'text' => $this->property->title . ' updated successfully!',
+            'showConfirmButton' => false,
+            'timer' => 2000,
+            'timerProgressBar' => true,
+        ]);
+        $this->reset();
     }
 };
 ?>
 
 <div>
-    <form wire:submit.prvent="editProperty"
+    <form wire:submit.prevent='saveProperty' method="POST"
         class='bg-white text-gray-500 max-w-[
-   340px
-   ] mx-4 p-6 text-left text-sm rounded-lg border border-gray-300/60'>
-        <label class='font-medium' for='email'>Project Title</label>
-        <input id='email' class='w-full border mt-1.5 mb-4 border-gray-500/30 outline-none rounded py-2.5 px-3'
-            type='email' placeholder='Enter title'>
-        <label class='font-medium' for='content'>Content</label>
-        <textarea rows='3' id='content'
-            class='w-full resize-none border mt-1.5 border-gray-500/30 outline-none rounded py-2.5 px-3' type='email'
-            placeholder='Enter content'></textarea>
-        <div class='flex items-center justify-between'>
-            <button type='submit' class='my-3 bg-indigo-500 py-2 px-5 rounded text-white font-medium'>Post</button>
-            <div class='space-x-0.5'>
-                <button type='button' aria-label='add'>
-                    <svg width='24' height='24' viewBox='0 0 16 16' fill='none'
-                        xmlns='http: //www.w3.org/2000/svg'>
-                        <path
-                            d='M10 8H8m0 0H6m2 0V6m0 2v2m3.333 4H4.667A2.667 2.667 0 0 1 2 11.333V4.667A2.667 2.667 0 0 1 4.667 2h6.666A2.667 2.667 0 0 1 14 4.667v6.666A2.667 2.667 0 0 1 11.333 14Z'
-                            stroke='currentColor' stroke-opacity='.8' stroke-linecap='round' />
-                    </svg>
-                </button>
-                <button type='button' aria-label='addPicture'>
-                    <svg width='24' height='24' viewBox='0 0 16 16' fill='none'
-                        xmlns='http: //www.w3.org/2000/svg'>
-                        <path
-                            d='M9.51 10.625 8.365 9.49c-.526-.522-.79-.783-1.092-.88a1.33 1.33 0 0 0-.82 0c-.303.097-.566.358-1.092.88l-2.666 2.685m6.815-1.55.228-.226c.537-.532.806-.799 1.114-.896.27-.086.562-.082.831.01.306.104.569.376 1.094.921l.557.566m-3.824-.375 2.637 2.684m-9.452-1.134c.02.173.056.31.117.43.128.251.332.455.583.583.285.145.659.145 1.405.145h6.4c.415 0 .714 0 .947-.024m-9.452-1.134c-.028-.237-.028-.544-.028-.975V4.8c0-.747 0-1.12.145-1.405.128-.251.332-.455.583-.583.285-.145.659-.145 1.405-.145h2.534m4.813 10.642c.187-.02.332-.056.459-.121.25-.128.454-.332.582-.583.146-.285.146-.658.146-1.405V8.667M12 6V4m0 0V2m0 2h2m-2 0h-2'
-                            stroke='currentColor' stroke-opacity='.8' stroke-linecap='round' stroke-linejoin='round' />
-                    </svg>
-                </button>
-                <button type='button' aria-label='notes'>
-                    <svg width='24' height='24' viewBox='0 0 16 16' fill='none'
-                        xmlns='http: //www.w3.org/2000/svg'>
-                        <path
-                            d='M2 6h12m-2.667 2.668-6.666-.001m2.222 2.667H4.667m0-9.334v1.333M11.333 2v1.333M4.133 14h7.734c.746 0 1.12 0 1.405-.145a1.34 1.34 0 0 0 .583-.583c.145-.285.145-.659.145-1.405v-6.4c0-.747 0-1.12-.145-1.406a1.33 1.33 0 0 0-.583-.582c-.285-.146-.659-.146-1.405-.146H4.133c-.746 0-1.12 0-1.405.146-.25.127-.455.331-.583.582C2 4.347 2 4.72 2 5.467v6.4c0 .746 0 1.12.145 1.405.128.25.332.455.583.583.285.145.659.145 1.405.145'
-                            stroke='currentColor' stroke-opacity='.8' stroke-linecap='round' stroke-linejoin='round' />
-                    </svg>
-                </button>
+  340px
+  ] mx-4 p-6 text-left text-sm rounded-lg border border-gray-300/60'>
+
+        <label class='font-medium' for='title'>Property Title</label>
+        <input id='title' wire:model.live='title'
+            class='w-full border mt-1.5 mb-4 border-gray-500/30 outline-none rounded py-2.5 px-3' type='text'
+            placeholder='Enter title'>
+        @error('title')
+            <span class="text-red-500 text-xs block">{{ $message }}</span>
+        @enderror
+
+        <label class='font-medium' for='price'>Price</label>
+        <input id='price' class='w-full border mt-1.5 mb-4 border-gray-500/30 outline-none rounded py-2.5 px-3'
+            type='number' wire:model.live='price' placeholder='Enter price'>
+        @error('price')
+            <span class="text-red-500 text-xs block">{{ $message }}</span>
+        @enderror
+        <label class='font-medium block mb-3' for='type'>Type</label>
+        <div class="block mb-2">
+            <button wire:click="setPropertyType('apartment')"
+                class='font-medium px-2 py-2 @if ($type === 'apartment') bg-green-500 @else bg-blue-500 @endif text-white rounded-lg'
+                type='button'>Apartment</button>
+            <button wire:click="setPropertyType('land')"
+                class='font-medium px-2 py-2  @if ($type === 'land') bg-green-500 @else bg-blue-500 @endif  text-white rounded-lg'
+                type='button'>Land</button>
+        </div>
+        <label class='font-medium' for='featured_image'>Featured Image</label>
+        <input id='featured_image' class='w-full border mt-1.5 mb-4 border-gray-500/30 outline-none rounded py-2.5 px-3'
+            type='file' accept="image/*" wire:model.live='featured_image' placeholder='Enter featured_image'>
+        @error('featured_image')
+            <span class="text-red-500 text-xs block">{{ $message }}</span>
+        @enderror
+
+        @if ($featured_image)
+            <img src="{{ $featured_image->temporaryUrl() }}" alt="" class="w-48 h-48 rounded-2xl">
+        @endif
+        <label class='font-medium' for='property_images'>Property Images</label>
+        <input id='property_images'
+            class='w-full border mt-1.5 mb-4 border-gray-500/30 outline-none rounded py-2.5 px-3' type='file'
+            accept="image/*" wire:model='property_images' placeholder='Enter property_images' multiple>
+
+        @error('property_images')
+            <span class="text-red-500 text-xs block">{{ $message }}</span>
+        @enderror
+
+        @if ($property_images)
+            <div class="flex flex-wrap gap-4 mt-4">
+                @foreach ($property_images as $index => $property_image)
+                    @if ($property_image)
+                        <div class="relative">
+                            <img src="{{ $property_image->temporaryUrl() }}" alt="Property image {{ $index }}"
+                                class="w-48 h-48 rounded-2xl object-cover">
+                            <button type="button" wire:click="removeImage({{ $index }})"
+                                class="absolute top-2 right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center">
+                                ×
+                            </button>
+                        </div>
+                    @endif
+                @endforeach
             </div>
+        @endif
+        @error('type')
+            <span class="text-red-500 text-xs block">{{ $message }}</span>
+        @enderror
+        <label class='font-medium' for='bedrooms'>Bedrooms</label>
+        <input id='bedrooms' wire:model.live='bedrooms'
+            class='w-full border mt-1.5 mb-4 border-gray-500/30 outline-none rounded py-2.5 px-3' type='number'
+            placeholder='Enter bedrooms'>
+        @error('bedrooms')
+            <span class="text-red-500 text-xs block">{{ $message }}</span>
+        @enderror
+        <label class='font-medium' for='bathrooms'>Bathrooms</label>
+        <input id='bathrooms' wire:model.live='bathrooms'
+            class='w-full border mt-1.5 mb-4 border-gray-500/30 outline-none rounded py-2.5 px-3' type='number'
+            placeholder='Enter bathrooms'>
+        @error('bathrooms')
+            <span class="text-red-500 text-xs block">{{ $message }}</span>
+        @enderror
+        <label class='font-medium' for='city'>City</label>
+        <input id='city' wire:model.live='city'
+            class='w-full border mt-1.5 mb-4 border-gray-500/30 outline-none rounded py-2.5 px-3' type='text'
+            placeholder='Enter city'>
+        @error('city')
+            <span class="text-red-500 text-xs block">{{ $message }}</span>
+        @enderror
+        <label class='font-medium' for='address'>Address</label>
+        <input id='address' wire:model.live='address'
+            class='w-full border mt-1.5 mb-4 border-gray-500/30 outline-none rounded py-2.5 px-3' type='text'
+            placeholder='Enter address'>
+        @error('address')
+            <span class="text-red-500 text-xs block">{{ $message }}</span>
+        @enderror
+        <label class='font-medium' for='area'>Area</label>
+        <input id='area' wire:model.live='area'
+            class='w-full border mt-1.5 mb-4 border-gray-500/30 outline-none rounded py-2.5 px-3' type='number'
+            placeholder='Enter area'>
+        @error('area')
+            <span class="text-red-500 text-xs block">{{ $message }}</span>
+        @enderror
+        <label class='font-medium' for='status'>Status</label>
+        <select id='status' wire:model.live='status'
+            class='w-full border mt-1.5 mb-4 border-gray-500/30 outline-none rounded py-2.5 px-3' type='text'
+            placeholder='Enter status'>
+            <option value="">-- Choose ---</option>
+            <option value="available">Available</option>
+            <option value="sold">Sold Out</option>
+            <option value="leased">Leased</option>
+        </select>
+        @error('status')
+            <span class="text-red-500 text-xs block">{{ $message }}</span>
+        @enderror
+        <label class='font-medium' for='description'>Description</label>
+        <textarea rows='3' id='description' wire:model.live='description'
+            class='w-full resize-none border mt-1.5 border-gray-500/30 outline-none rounded py-2.5 px-3' type='title'
+            placeholder='Enter description'></textarea>
+        @error('description')
+            <span class="text-red-500 text-xs block">{{ $message }}</span>
+        @enderror
+        <div class='flex items-center justify-between'>
+            <button type='submit' class='my-3 bg-indigo-500 py-2 px-5 rounded text-white font-medium'>Update</button>
         </div>
     </form>
 </div>

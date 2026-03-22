@@ -71,6 +71,8 @@ new class extends Component {
                                     <td class='p-5 whitespace-nowrap text-sm leading-6 font-medium text-gray-900'>
                                         <button
                                             type='button'class='w-20 px-2 py-3 bg-red-500 active:scale-95 transition text-sm text-white rounded-full bg-red-700'>Delete</button>
+                                        <a type='button' href="{{ route('properties.show', $property->slug) }}"
+                                            class='w-20 px-2 py-3 active:scale-95 transition text-sm text-white rounded-lg bg-slate-700'>show</a>
                                         <a type='button' href="{{ route('properties.edit', $property->slug) }}"
                                             class='w-20 px-2 py-3 active:scale-95 transition text-sm text-white rounded-lg bg-slate-700'>edit</a>
                                     </td>

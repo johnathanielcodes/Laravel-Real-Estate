@@ -38,9 +38,10 @@ class PropertyController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(string $id)
+    public function show($property)
     {
-        //
+        $property = Property::with('images')->where('slug', $property)->first();
+        return view('layouts.dashboard.properties.show', compact('property'));
     }
 
     /**
@@ -48,8 +49,8 @@ class PropertyController extends Controller
      */
     public function edit($slug)
     {
-        $property = Property::whereSlug($slug)->get();
-        dd($property);
+        $property = Property::whereSlug($slug)->first();
+
         return view('layouts.dashboard.properties.edit', compact('property'));
     }
 
