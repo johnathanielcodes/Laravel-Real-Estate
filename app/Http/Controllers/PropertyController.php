@@ -46,8 +46,10 @@ class PropertyController extends Controller
     /**
      * Show the form for editing the specified resource.
      */
-    public function edit(Property $property)
+    public function edit($slug)
     {
+        $property = Property::whereSlug($slug)->get();
+        dd($property);
         return view('layouts.dashboard.properties.edit', compact('property'));
     }
 
